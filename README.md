@@ -1,1 +1,1 @@
-# cs-3251-project-1
+# CS 3251 Project 1
