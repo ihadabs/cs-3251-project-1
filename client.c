@@ -25,6 +25,27 @@
 
 #define PORT 9003
 
+int isAcountName(char acount_name[])
+{
+    char acounts_names[5][20] = {"myChecking",
+                                 "mySavings",
+                                 "myCD",
+                                 "my401k",
+                                 "my529"};
+
+    int i;
+
+    for (i = 0; i < 5; i++)
+    {
+        if (strcmp(acounts_names[i], acount_name) == 0)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 /* The main function */
 int main(int argc, char *argv[])
 {
@@ -32,7 +53,17 @@ int main(int argc, char *argv[])
     int client_socket;                 /* socket descriptor */
     struct sockaddr_in server_address; /* server address structure */
 
-    char *account_name;         /* Account Name  */
+    // For storing arguments
+    char *cmd;
+    char *first_account_name; /* Account Name  */
+    char *second_account_name;
+    int amount;
+
+    // For comunicating with the server
+    int cmd_id;                 /* BAL = 0, WITHDRAW = 1, TRANSFER = 2 */
+    int first_account_id;       /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
+    int second_account_id = -1; /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
+
     char *server_ip;            /* Server IP address  */
     unsigned short server_port; /* Server Port number */
 
@@ -41,18 +72,90 @@ int main(int argc, char *argv[])
 
     int balance; /* Account balance */
 
-    /* Get the Account Name from the command line */
-    if (argc != 4)
-    {
-        printf("Incorrect number of arguments. The correct format is:\n\taccountName serverIP serverPort");
-        exit(1);
-    }
-    account_name = argv[1];
     memset(&send_buff, 0, SNDBUFSIZE);
     memset(&receive_buff, 0, RCVBUFSIZE);
 
     /* Get the addditional parameters from the command line */
-    /*	    FILL IN	*/
+    if (argc < 3)
+    {
+        printf("Invaild number of arguments.\n");
+        exit(0);
+    }
+
+    cmd = argv[1];
+
+    first_account_name = argv[2];
+    first_account_id = isAcountName(first_account_name);
+    if (first_account_id < 0)
+    {
+        printf("Invaild account name. %d\n", isAcountName(first_account_name));
+        exit(0);
+    }
+
+    if (strcmp(cmd, "BAL") == 0 && argc >= 3)
+    {
+        cmd_id = 0;
+    }
+    else if (strcmp(cmd, "WITHDRAW") == 0 && argc >= 4)
+    {
+        cmd_id = 1;
+        amount = atoi(argv[3]);
+    }
+    else if (strcmp(cmd, "TRANSFER") == 0 && argc >= 5)
+    {
+        cmd_id = 2;
+        second_account_name = argv[3];
+        second_account_id = isAcountName(second_account_name);
+        if (second_account_id < 0)
+        {
+            printf("Invaild CMD or invaild number of arguments.\n");
+            exit(0);
+        }
+        else if (strcmp(first_account_name, second_account_name) == 0)
+        {
+            printf("You can not transfer money to the same account, please enter two different accounts names.\n");
+            exit(0);
+        }
+
+        amount = atoi(argv[4]);
+    }
+    else
+    {
+        printf("Invaild CMD or invaild number of arguments.\n");
+        exit(0);
+    }
+
+    if (strcmp(cmd, "WITHDRAW") == 0 || strcmp(cmd, "TRANSFER") == 0)
+    {
+        if (amount == 0)
+        {
+            printf("Invaild amount, please insert an integer that is greater than 0.\n\n");
+            exit(0);
+        }
+    }
+
+    printf("\n");
+
+    if (cmd_id == 0)
+    {
+        printf("Retrieving balance for %s account... \n", first_account_name);
+    }
+    else if (cmd_id == 1)
+    {
+        printf("Withdrawing $%d from %s account... \n", amount, first_account_name);
+    }
+    else if (cmd_id == 2)
+    {
+        printf("Transfering $%d from %s account to %s account... \n", amount, first_account_name, second_account_name);
+    }
+    else
+    {
+        printf("Somthing went wrong!");
+        exit(0);
+    }
+
+    // printf("Message to send: %d %d %d %d \n\n", cmd_id, first_account_id, second_account_id, amount);
+    snprintf(send_buff, sizeof(send_buff), "%d %d %d %d", cmd_id, first_account_id, second_account_id, amount);
 
     /* Create a new TCP socket*/
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -71,14 +174,14 @@ int main(int argc, char *argv[])
     }
 
     /* Send the string to the server */
-    /*	    FILL IN	 */
+    send(client_socket, send_buff, sizeof(send_buff), 0);
 
     /* Receive and print response from the server */
     recv(client_socket, &receive_buff, sizeof(receive_buff), 0);
-    printf("The server says: %s \n\n", receive_buff);
+    printf("%s \n\n", receive_buff);
 
-    printf("%s\n", account_name);
-    printf("Balance is: %i\n", balance);
+    // printf("%s\n", first_account_name);
+    // printf("Balance is: %i\n", balance);
 
     return 0;
 }

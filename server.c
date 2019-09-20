@@ -22,11 +22,52 @@
 
 #include <unistd.h> /* for close() */
 #include <string.h> /* support any string ops */
+#include <time.h>
 
 #define RCVBUFSIZE 512 /* The receive buffer size */
 #define SNDBUFSIZE 512 /* The send buffer size */
 #define BUFSIZE 40     /* Your name can be as many as 40 chars*/
 #define PORT 9003
+
+int getNumberOfTransactionsInLastMinute(int *transactions_history)
+{
+    time_t now = time(NULL);
+    int len = 3;
+    int i, j, temp;
+
+    for (i = 0; i < len; i++)
+    {
+        int transaction_time = transactions_history[i];
+        if (now - transaction_time > 60)
+        {
+            transactions_history[i] = 0;
+        }
+    }
+
+    for (i = 0; i < len; i++)
+    {
+        for (j = i + 1; j < len; j++)
+        {
+            if (transactions_history[i] > transactions_history[j])
+            {
+                temp = transactions_history[i];
+                transactions_history[i] = transactions_history[j];
+                transactions_history[j] = temp;
+            }
+        }
+    }
+
+    for (i = 0; i < len; i++)
+    {
+        int transaction_time = transactions_history[i];
+        if (transaction_time != 0)
+        {
+            break;
+        }
+    }
+
+    return len - i;
+}
 
 /* The main function */
 int main(int argc, char *argv[])
@@ -39,10 +80,40 @@ int main(int argc, char *argv[])
     unsigned short server_port;        /* Server port */
     unsigned int client_length;        /* Length of address data struct */
 
-    char name_buff[BUFSIZE]; /* Buff to store account name from client */
-    int balance;             /* Place to record account balance result */
+    char client_message[BUFSIZE]; /* Buff to store account name from client */
+    int first_account_balance;    /* Place to record account balance result */
+    int second_account_balance;
 
     char server_message[256] = "You have reached the server!";
+
+    // For comunicating with the client
+    int cmd_id;                 /* BAL = 0, WITHDRAW = 1, TRANSFER = 2 */
+    int first_account_id;       /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
+    int second_account_id = -1; /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
+    int amount;
+    char *first_account_name; /* Account Name  */
+    char *second_account_name;
+
+    // BAL|WITHDRAW|TRANSFER
+
+    char cmds[3][10] = {"BAL",
+                        "WITHDRAW",
+                        "TRANSFER"};
+
+    char accounts_names[5][20] = {"myChecking",
+                                  "mySavings",
+                                  "myCD",
+                                  "my401k",
+                                  "my529"};
+
+    int accounts_balances[5] = {200,
+                                200,
+                                200,
+                                200,
+                                200};
+
+    int transactions[5][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
+    int number_of_transactions;
 
     /* Create new TCP Socket for incoming requests*/
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -68,7 +139,7 @@ int main(int argc, char *argv[])
         exit(0);
     }
     else
-        printf("Server listening..\n");
+        printf("Server listening..\n\n");
 
     /* Loop server forever*/
     while (1)
@@ -81,19 +152,113 @@ int main(int argc, char *argv[])
             printf("Server acccept failed...\n");
             exit(0);
         }
-        else
-            printf("Server acccept the client...\n");
+
+        printf("------------------------------------\n");
 
         /* Extract the account name from the packet, store in nameBuf */
-        read(client_socket, name_buff, sizeof(name_buff));
-        printf("Account name: %s\n", name_buff);
+        read(client_socket, client_message, sizeof(client_message));
+        // printf("The client says: %s\n", client_message);
 
-        /* Look up account balance, store in balance */
-        /*	FILL IN	    */
+        int i;
+        int args[4];
+        char delimiter[] = " ";
+        char *ptr = strtok(client_message, delimiter);
+
+        for (i = 0; i < 4; i++)
+        {
+            args[i] = atoi(ptr);
+            ptr = strtok(NULL, delimiter);
+        }
+
+        cmd_id = args[0];
+        first_account_id = args[1];
+        second_account_id = args[2];
+        amount = args[3];
+        first_account_name = accounts_names[first_account_id];
+        first_account_balance = accounts_balances[first_account_id];
+
+        // Check balance
+        if (cmd_id == 0)
+        {
+            printf("Client wants to retrieve balance for %s account... \n", first_account_name);
+            snprintf(server_message, sizeof(server_message), "The balance for %s account is $%d.", first_account_name, first_account_balance);
+        }
+
+        // Withdraw money
+        else if (cmd_id == 1)
+        {
+
+            printf("Client wants withdraw $%d from %s account... \n", amount, first_account_name);
+
+            int number_of_transactions = getNumberOfTransactionsInLastMinute(transactions[first_account_id]);
+            if (number_of_transactions >= 3)
+            {
+                time_t now = time(NULL);
+                int waiting_time = 61 - (now - transactions[first_account_id][0]);
+                snprintf(server_message, sizeof(server_message), "Withdraw failed! Too many withdrawals in a minute!\nPlease, wait %d seconds and then try again.", waiting_time);
+            }
+            else
+            {
+
+                if (amount > first_account_balance)
+                {
+                    snprintf(server_message, sizeof(server_message), "Withdraw failed! The available balance is $%d.", first_account_balance);
+                }
+                else
+                {
+                    // Add transaction
+                    time_t now = time(NULL);
+                    int i;
+                    for (i = 0; i < 3; i++)
+                    {
+                        if (transactions[first_account_id][i] == 0)
+                        {
+                            transactions[first_account_id][i] = now;
+                            break;
+                        }
+                    }
+
+                    // Change account balance
+                    accounts_balances[first_account_id] = first_account_balance - amount;
+                    first_account_balance = accounts_balances[first_account_id];
+
+                    snprintf(server_message, sizeof(server_message), "Withdrawing $%d succeeded! The new balance is $%d.", amount, first_account_balance);
+                }
+            }
+        }
+
+        // Transfer money
+        else if (cmd_id == 2)
+        {
+            printf("Client wants to transfer $%d from %s account to %s account... \n", amount, first_account_name, second_account_name);
+            second_account_name = accounts_names[second_account_id];
+            second_account_balance = accounts_balances[second_account_id];
+
+            if (amount > first_account_balance)
+            {
+                snprintf(server_message, sizeof(server_message), "Transfering $%d to %s account failed! The available balance for %s account is $%d.", amount, second_account_name, first_account_name, first_account_balance);
+            }
+            else
+            {
+                // Change accounts balances
+                accounts_balances[first_account_id] = first_account_balance - amount;
+                accounts_balances[second_account_id] = second_account_balance + amount;
+
+                // Reassign variables
+                first_account_balance = accounts_balances[first_account_id];
+                second_account_balance = accounts_balances[second_account_id];
+
+                snprintf(server_message, sizeof(server_message), "Transfering $%d to %s account succeeded!\nThe new balance for %s account is $%d and for %s account is $%d.", amount, second_account_name, second_account_name, second_account_balance, first_account_name, first_account_balance);
+            }
+        }
+        else
+        {
+            printf("Bad formated request!");
+            exit(0);
+        }
 
         /* Return account balance to client */
-        /*	FILL IN	    */
-
+        printf("I will tell it \"%s\".\n\n", server_message);
         send(client_socket, server_message, sizeof(server_message), 0);
     }
 }
