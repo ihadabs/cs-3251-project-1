@@ -13,7 +13,7 @@ The project is about developing a networked application between a server (a bank
 To test the project follow the following steps:
 
 - Clone this repo
-- Compile server.c and client.c
+- Compile server.c and client.c files
 - Start the server by running it's executable file
 - Run the client providing the arguments for your desierd opration
 
