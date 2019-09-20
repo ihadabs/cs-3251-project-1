@@ -1,10 +1,10 @@
 # CS 3251 Project 1
 
 ##### Table of Contents  
-[Goal](#goal)  
-[Description](#description) 
-[Usage](#usage) 
-[Client Oprations](#clientoprations) 
+1. [Goal](#goal)  
+2. [Description](#description) 
+3. [Usage](#usage) 
+4. [Client Oprations](#client-oprations) 
 
 ## Goal
 
