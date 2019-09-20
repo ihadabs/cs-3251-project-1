@@ -1,5 +1,11 @@
 # CS 3251 Project 1
 
+##### Table of Contents  
+[Goal](#goal)  
+[Description](#description) 
+[Usage](#usage) 
+[Client Oprations](#clientoprations) 
+
 ## Goal
 
 The goal of this project is to get familiar with sockets programming in C.
@@ -8,9 +14,9 @@ The goal of this project is to get familiar with sockets programming in C.
 
 The project is about developing a networked application between a server (a bank) and a client (a bank customer). The client will communicate with the server to perform a set of operations and the server will handle all underlying transactions and communicate back to the client. The client will be able to ask the server for an account balance and withdrawing/transferring money.
 
-## Test
+## Usage
 
-To test the project follow the following steps:
+To use the project follow the following steps:
 
 - Clone this repo
 - Compile server.c and client.c files
