@@ -19,11 +19,31 @@ To test the project follow the following steps:
 
 ## Client Oprations
 
+There are 3 oprations that can be preformd by the client.
+
 ### Checking Balance
+
+For checking an account balance, you sould run the client provideing the following arguments.
+
+    ./client BAL [accountName]
+    ./client BAL myChecking
 
 ### Withdrawing Money
 
+For withdrawing money from an account, you sould run the client provideing the following arguments (you are not allowed to withdraw more that 3 times a minute).
+
+    ./client WITHDRAW [accountName] [amount]
+    ./client WITHDRAW my401k 400
+
 ### Transfering Money
+
+For transfering money from an account to another, you sould run the client provideing the following arguments.
+
+    ./client TRANSFER [firstAccountName] [secondAccountName] [amount]
+    ./client TRANSFER myChecking myCD 300
+
+- An account name can be myChecking, mySavings, myCD, my401k, or my529.
+- An amount to be withdrawd or transferd must be an intergar grater than 0.
 
 ## Requirements
 
