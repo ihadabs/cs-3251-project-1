@@ -1,0 +1,63 @@
+** Checking the balace for different accounts **
+
+./client BAL myChecking
+Retrieving balance for myChecking account... 
+The balance for myChecking account is $1000. 
+
+./client BAL mySavings
+Retrieving balance for mySavings account... 
+The balance for mySavings account is $500. 
+
+./client BAL myCD
+Retrieving balance for myCD account... 
+The balance for myCD account is $2000. 
+
+./client BAL my401k
+Retrieving balance for my401k account... 
+The balance for my401k account is $401000. 
+
+./client BAL my529
+Retrieving balance for my529 account... 
+The balance for my529 account is $529. 
+
+
+
+** Withdrawing $10 for 3 times in a minute **
+
+./client WITHDRAW myChecking 10
+Withdrawing $10 from myChecking account... 
+Withdrawing $10 succeeded! The new balance is $990. 
+
+./client WITHDRAW myChecking 10
+Withdrawing $10 from myChecking account... 
+Withdrawing $10 succeeded! The new balance is $980. 
+
+./client WITHDRAW myChecking 10
+Withdrawing $10 from myChecking account... 
+Withdrawing $10 succeeded! The new balance is $970. 
+
+
+
+** Withdrawing $10 for the 4th time in a minute **
+
+./client WITHDRAW myChecking 10
+Withdrawing $10 from myChecking account... 
+Withdraw failed! Too many withdrawals in a minute!
+Please, wait 24 seconds and then try again. 
+
+
+
+** Transfering $10 **
+
+./client TRANSFER myChecking mySavings 10
+Transfering $10 from myChecking account to mySavings account... 
+Transfering $10 to mySavings account succeeded!
+The new balance for mySavings account is $510 and for myChecking account is $960. 
+
+
+
+** Transfering $1000 from myChecking (should fail) **
+
+./client TRANSFER myChecking my401k 1000
+Transfering $1000 from myChecking account to my401k account... 
+Transfering $1000 to my401k account failed! The available balance for myChecking account is $960. 

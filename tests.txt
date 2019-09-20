@@ -1,0 +1,52 @@
+
+** For checking balance **
+
+c BAL myChecking
+c BAL mySavings
+c BAL myCD
+c BAL my401k
+c BAL my529
+
+
+
+** For withdrawing money **
+
+c WITHDRAW myChecking 10
+c WITHDRAW mySavings 10
+c WITHDRAW myCD 10
+c WITHDRAW my401k 10
+c WITHDRAW my529 10
+
+
+
+** For transfering money **
+
+c TRANSFER myChecking myChecking 10
+c TRANSFER myChecking mySavings 10
+c TRANSFER myChecking myCD 10
+c TRANSFER myChecking my401k 10
+c TRANSFER myChecking my529 10
+
+c TRANSFER mySavings myChecking 10
+c TRANSFER mySavings mySavings 10
+c TRANSFER mySavings myCD 10
+c TRANSFER mySavings my401k 10
+c TRANSFER mySavings my529 10
+
+c TRANSFER myCD myChecking 10
+c TRANSFER myCD mySavings 10
+c TRANSFER myCD myCD 10
+c TRANSFER myCD my401k 10
+c TRANSFER myCD my529 10
+
+c TRANSFER my401k myChecking 10
+c TRANSFER my401k mySavings 10
+c TRANSFER my401k myCD 10
+c TRANSFER my401k my401k 10
+c TRANSFER my401k my529 10
+
+c TRANSFER my529 myChecking 10
+c TRANSFER my529 mySavings 10
+c TRANSFER my529 myCD 10
+c TRANSFER my529 my401k 10
+c TRANSFER my529 my529 10

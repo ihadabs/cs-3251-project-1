@@ -106,11 +106,11 @@ int main(int argc, char *argv[])
                                   "my401k",
                                   "my529"};
 
-    int accounts_balances[5] = {200,
-                                200,
-                                200,
-                                200,
-                                200};
+    int accounts_balances[5] = {1000,
+                                500,
+                                2000,
+                                401000,
+                                529};
 
     int transactions[5][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
     int number_of_transactions;
