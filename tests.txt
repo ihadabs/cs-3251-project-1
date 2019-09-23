@@ -1,3 +1,4 @@
+tar zcvf albinsaad-proj1.tar.gz client.c server.c Makefile albinsaad-output.txt README.md
 
 ** For checking balance **
 
