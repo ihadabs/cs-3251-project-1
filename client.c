@@ -11,19 +11,17 @@
 
 /* Included libraries */
 
-#include <stdio.h>      /* for printf() and fprintf() */
-#include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
-#include <arpa/inet.h>  /* for sockaddr_in and inet_addr() */
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
 /* Constants */
-#define RCVBUFSIZE 512 /* The receive buffer size */
-#define SNDBUFSIZE 512 /* The send buffer size */
+#define RCVBUFSIZE 512
+#define SNDBUFSIZE 512
 #define REPLYLEN 32
-
-#define PORT 9003
 
 int isAcountName(char acount_name[])
 {
@@ -32,16 +30,10 @@ int isAcountName(char acount_name[])
                                  "myCD",
                                  "my401k",
                                  "my529"};
-
     int i;
-
     for (i = 0; i < 5; i++)
-    {
         if (strcmp(acounts_names[i], acount_name) == 0)
-        {
             return i;
-        }
-    }
 
     return -1;
 }
@@ -50,13 +42,15 @@ int isAcountName(char acount_name[])
 int main(int argc, char *argv[])
 {
 
+    unsigned short server_port = 9003; /* Server Port number */
+
     int client_socket;                 /* socket descriptor */
     struct sockaddr_in server_address; /* server address structure */
 
     // For storing arguments
-    char *cmd;
-    char *first_account_name; /* Account Name  */
-    char *second_account_name;
+    char *cmd;                 /* BAL, WITHDRAW, or TRANSFER */
+    char *first_account_name;  /* myChecking, mySavings, myCD, my401k, or my529 */
+    char *second_account_name; /* myChecking, mySavings, myCD, my401k, or my529 */
     int amount;
 
     // For comunicating with the server
@@ -64,13 +58,8 @@ int main(int argc, char *argv[])
     int first_account_id;       /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
     int second_account_id = -1; /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
 
-    char *server_ip;            /* Server IP address  */
-    unsigned short server_port; /* Server Port number */
-
     char send_buff[SNDBUFSIZE];    /* Send Buffer */
     char receive_buff[RCVBUFSIZE]; /* Receive Buffer */
-
-    int balance; /* Account balance */
 
     memset(&send_buff, 0, SNDBUFSIZE);
     memset(&receive_buff, 0, RCVBUFSIZE);
@@ -82,8 +71,10 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
+    // Get the CMD
     cmd = argv[1];
 
+    // Get the name for the first account
     first_account_name = argv[2];
     first_account_id = isAcountName(first_account_name);
     if (first_account_id < 0)
@@ -154,15 +145,15 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    // printf("Message to send: %d %d %d %d \n\n", cmd_id, first_account_id, second_account_id, amount);
+    // Storing the message to be sent to the server in send_buff
     snprintf(send_buff, sizeof(send_buff), "%d %d %d %d", cmd_id, first_account_id, second_account_id, amount);
 
-    /* Create a new TCP socket*/
+    /* Create a new TCP socket */
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
 
     /* Construct the server address structure */
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(PORT);
+    server_address.sin_port = htons(server_port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
     /* Establish connecction to the server */
@@ -179,9 +170,6 @@ int main(int argc, char *argv[])
     /* Receive and print response from the server */
     recv(client_socket, &receive_buff, sizeof(receive_buff), 0);
     printf("%s \n\n", receive_buff);
-
-    // printf("%s\n", first_account_name);
-    // printf("Balance is: %i\n", balance);
 
     return 0;
 }

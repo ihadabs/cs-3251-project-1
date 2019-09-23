@@ -11,23 +11,22 @@
 
 /*Included libraries*/
 
-#include <stdio.h>  /* for printf() and fprintf() */
-#include <stdlib.h> /* supports all sorts of functionality */
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <sys/types.h>
-#include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
+#include <sys/socket.h>
 
 #include <netinet/in.h>
-#include <arpa/inet.h> /* for sockaddr_in and inet_addr() */
+#include <arpa/inet.h>
 
-#include <unistd.h> /* for close() */
-#include <string.h> /* support any string ops */
+#include <unistd.h>
+#include <string.h>
 #include <time.h>
 
-#define RCVBUFSIZE 512 /* The receive buffer size */
-#define SNDBUFSIZE 512 /* The send buffer size */
-#define BUFSIZE 40     /* Your name can be as many as 40 chars*/
-#define PORT 9003
+#define RCVBUFSIZE 512
+#define SNDBUFSIZE 512
+#define BUFSIZE 40
 
 int getNumberOfTransactionsInLastMinute(int *transactions_history)
 {
@@ -76,25 +75,23 @@ int main(int argc, char *argv[])
     int server_socket;                 /* Server Socket */
     int client_socket;                 /* Client Socket */
     struct sockaddr_in server_address; /* Local address */
-    struct sockaddr_in client_address; /* Client address */
-    unsigned short server_port;        /* Server port */
-    unsigned int client_length;        /* Length of address data struct */
+    unsigned short server_port = 9003; /* Server port */
 
-    char client_message[BUFSIZE]; /* Buff to store account name from client */
-    int first_account_balance;    /* Place to record account balance result */
-    int second_account_balance;
-
-    char server_message[256] = "You have reached the server!";
+    char server_message[SNDBUFSIZE]; /* Buff to store message that will be sent to client */
+    char client_message[RCVBUFSIZE]; /* Buff to store message from client */
 
     // For comunicating with the client
     int cmd_id;                 /* BAL = 0, WITHDRAW = 1, TRANSFER = 2 */
     int first_account_id;       /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
     int second_account_id = -1; /* myChecking = 0, mySavings = 1, myCD = 2, my401k = 3, my529 = 4 */
-    int amount;
-    char *first_account_name; /* Account Name  */
-    char *second_account_name;
 
-    // BAL|WITHDRAW|TRANSFER
+    char *first_account_name;  /* myChecking, mySavings, myCD, my401k, or my529 */
+    char *second_account_name; /* myChecking, mySavings, myCD, my401k, or my529 */
+
+    int first_account_balance;  /* Place to record account balance result */
+    int second_account_balance; /* Place to record account balance result */
+
+    int amount;
 
     char cmds[3][10] = {"BAL",
                         "WITHDRAW",
@@ -112,15 +109,15 @@ int main(int argc, char *argv[])
                                 401000,
                                 529};
 
-    int transactions[5][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
     int number_of_transactions;
+    int transactions[5][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
 
     /* Create new TCP Socket for incoming requests*/
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
     /* Construct local address structure*/
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(PORT);
+    server_address.sin_port = htons(server_port);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
     /* Bind to local address structure */
@@ -155,9 +152,7 @@ int main(int argc, char *argv[])
 
         printf("------------------------------------\n");
 
-        /* Extract the account name from the packet, store in nameBuf */
         read(client_socket, client_message, sizeof(client_message));
-        // printf("The client says: %s\n", client_message);
 
         int i;
         int args[4];
@@ -257,7 +252,7 @@ int main(int argc, char *argv[])
             exit(0);
         }
 
-        /* Return account balance to client */
+        /* Return response to client */
         printf("I will tell it \"%s\".\n\n", server_message);
         send(client_socket, server_message, sizeof(server_message), 0);
     }

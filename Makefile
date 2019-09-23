@@ -22,7 +22,7 @@ client: client.c
 	$(CC) client.c -o nameChanger
 
 server: server.c
-	$(CC) -lcrypto server.c -o changeServer
+	$(CC) server.c -o changeServer
 
 clean:
 	    rm -f client server *.o
