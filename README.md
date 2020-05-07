@@ -1,4 +1,4 @@
-# CS 3251 Project 1
+# Hnagman V1  
 
 ##### Table of Contents
 
