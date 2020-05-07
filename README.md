@@ -1,4 +1,4 @@
-# Hnagman V1  
+# Hangman V1  
 
 ##### Table of Contents
 
